@@ -120,6 +120,26 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
   }
 }
 
+class OriginalPlaylistState {
+  OriginalPlaylistState({
+    this.value = const [],
+  });
+
+  final List<File?> value;
+
+  OriginalPlaylistState copyWith(List<File?> playlist) {
+    return OriginalPlaylistState(value: playlist);
+  }
+}
+
+class OriginalPlaylistNotifier extends StateNotifier<OriginalPlaylistState> {
+  OriginalPlaylistNotifier() : super(OriginalPlaylistState());
+
+  void set(List<File?> playlist) {
+      state = state.copyWith(playlist);
+  }
+}
+
 enum PlaybackMode {
   repeatCurrent,
   repeat,
@@ -143,6 +163,49 @@ class PlaybackModeNotifier extends StateNotifier<PlaybackModeState> {
 
   void changeMode(PlaybackMode playbackMode) =>
       state = state.copyWith(playbackMode);
+}
+
+enum ShuffleMode {
+  on,
+  off,
+}
+
+class ShuffleModeState {
+  ShuffleModeState({
+    this.value = ShuffleMode.off,
+  });
+
+  final ShuffleMode value;
+
+  ShuffleModeState copyWith(ShuffleMode shuffleMode) {
+    return ShuffleModeState(value: shuffleMode);
+  }
+}
+
+class ShuffleModeNotifier extends StateNotifier<ShuffleModeState> {
+  ShuffleModeNotifier() : super(ShuffleModeState());
+
+  void changeMode(ShuffleMode shuffleMode) =>
+      state = state.copyWith(shuffleMode);
+}
+
+class PlayedIndexState {
+  PlayedIndexState({
+    this.value = const [],
+  });
+
+  final List<int?> value;
+
+  PlayedIndexState copyWith(List<int?> playedIndex) {
+    return PlayedIndexState(value: playedIndex);
+  }
+}
+
+class PlayedIndexNotifier extends StateNotifier<PlayedIndexState> {
+  PlayedIndexNotifier() : super(PlayedIndexState());
+
+  void replace(List<int?> index) =>
+      state = state.copyWith(index);
 }
 
 final playerStatusProvider =
@@ -189,3 +252,7 @@ StateNotifierProvider<PlaylistNotifier, PlaylistState>(
 );
 
 final playbackModeProvider = StateNotifierProvider<PlaybackModeNotifier, PlaybackModeState>((ref) => PlaybackModeNotifier());
+
+final shuffleModeProvider = StateNotifierProvider<ShuffleModeNotifier, ShuffleModeState>((ref) => ShuffleModeNotifier());
+
+final originalPlaylistProvider = StateNotifierProvider<OriginalPlaylistNotifier, OriginalPlaylistState>( (ref) => OriginalPlaylistNotifier());

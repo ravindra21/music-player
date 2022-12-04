@@ -27,6 +27,8 @@ abstract class MyAudioPlayer {
     required PlayerStatusNotifier playerStatusNotifier,
     required CurrentDurationNotifier currentDurationNotifier,
     required PlaylistNotifier playlistNotifier,
+    required PlaylistState playlist,
+    required ShuffleModeState shuffleMode,
   });
 
   void resumeOrPause({
@@ -38,6 +40,9 @@ abstract class MyAudioPlayer {
   });
   void nextRepeat({required WidgetRef ref});
   void nextNoRepeat({required WidgetRef ref});
+  int? getRandomIndex(List<int?> playlistIndex, List<int?> playedIndexArray);
+  void shuffle({required WidgetRef ref});
+  void shuffleOff({required WidgetRef ref});
 }
 
 class MyAudioPlayerImpl extends MyAudioPlayer {
@@ -136,14 +141,21 @@ class MyAudioPlayerImpl extends MyAudioPlayer {
     required PlayerStatusNotifier playerStatusNotifier,
     required CurrentDurationNotifier currentDurationNotifier,
     required PlaylistNotifier playlistNotifier,
+    required PlaylistState playlist,
+    required ShuffleModeState shuffleMode,
   }) async {
     await play(file);
 
-    nowPlayingIndexNotifier.changeIndex(index);
     playerStatusNotifier.changeStatus(PlayerState.playing);
     currentDurationNotifier.changeCurrentDuration(const Duration(seconds: 0));
     currentFileNotifier.changeFile(file);
-    playlistNotifier.set(null);
+    if(shuffleMode.value == ShuffleMode.off) {
+      playlistNotifier.set(null);
+      nowPlayingIndexNotifier.changeIndex(index);
+    } else {
+      int? index = playlist.value?.indexWhere((el) => el.path == file.path);
+      nowPlayingIndexNotifier.changeIndex(index??0);
+    }
   }
 
   @override
@@ -189,5 +201,56 @@ class MyAudioPlayerImpl extends MyAudioPlayer {
     currentIndexNotifier.changeIndex(newIndex);
     currentFileNotifier.changeFile(playlist.value?[newIndex]?? File(''));
     currentDurationNotifier.changeCurrentDuration(const Duration(seconds: 0));
+  }
+
+  @override
+  int? getRandomIndex(List<int?> playlistIndex, List<int?> playedIndexArray) {
+    print('===================');
+    print(playlistIndex);
+    print(playedIndexArray);
+    print('=====================');
+    List<int?> newPlaylist = playlistIndex.where((el) => !playedIndexArray.contains(el)).toList(); // salah nih
+    int? randomItem = (newPlaylist..shuffle()).first;
+    return randomItem;
+  }
+
+  @override
+  void shuffle({required WidgetRef ref}) {
+    final shuffleModeNotifier = ref.watch(shuffleModeProvider.notifier);
+    final playlistNotifier = ref.watch(playlistProvider.notifier);
+    final playlist = ref.watch(playlistProvider);
+    final originalPlaylistNotifier = ref.watch(originalPlaylistProvider.notifier);
+
+    shuffleModeNotifier.changeMode(ShuffleMode.on);
+    originalPlaylistNotifier.set(playlist.value??[]);
+    List<File>? n = playlist.value?.toList();
+    n?.shuffle();
+    playlistNotifier.set(n);
+  }
+
+  @override
+  void shuffleOff({required WidgetRef ref}) {
+    final originalPlaylist = ref.watch(originalPlaylistProvider);
+    final shuffleModeNotifier = ref.watch(shuffleModeProvider.notifier);
+    final playlistNotifier = ref.watch(playlistProvider.notifier);
+    final nowPlayingIndexNotifier = ref.watch(nowPlayingIndexProvider.notifier);
+    final currentFile = ref.watch(currentFileProvider);
+
+    shuffleModeNotifier.changeMode(ShuffleMode.off);
+    int newIndex = originalPlaylist.value.indexWhere((el) => el?.path == currentFile.value?.path);
+    playlistNotifier.set(originalPlaylist.value.cast());
+    nowPlayingIndexNotifier.changeIndex(newIndex);
+  }
+
+  next(){
+    // jika shuffle on
+      // kalo playedIndexState.length == playlist.length
+        // playledIndexState.empty();
+      //newIndex = get random index
+      // push ke playedIndexState
+  }
+
+  shuffleOffClick() {
+    // playedIndexState.empty();
   }
 }

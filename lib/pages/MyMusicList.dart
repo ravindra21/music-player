@@ -48,8 +48,11 @@ class MyList extends ConsumerWidget {
     final nowPlayingIndexNotifier = ref.watch(nowPlayingIndexProvider.notifier);
     final currentDurationNotifier = ref.watch(currentDurationProvider.notifier);
     final currentFileNotifier = ref.watch(currentFileProvider.notifier);
+    final currentFile = ref.watch(currentFileProvider);
     AsyncValue<List<File>> files = ref.watch(filesProvider);
     final playlistNotifier = ref.watch(playlistProvider.notifier);
+    final playlist = ref.watch(playlistProvider);
+    final shuffleMode = ref.watch(shuffleModeProvider);
 
     return files.when(
         data: (files) => ListView.separated(
@@ -57,8 +60,7 @@ class MyList extends ConsumerWidget {
           itemCount: files.length,
           itemBuilder: (context, index) {
             return Card(
-              color:
-              nowPlayingIndex.value == index ? Colors.blueGrey : Colors.white,
+              color: currentFile.value?.path == files[index].path ? Colors.blueGrey : Colors.white,
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   vertical: 10,
@@ -67,11 +69,11 @@ class MyList extends ConsumerWidget {
                 leading: const Icon(Icons.audiotrack),
                 title: Text(files[index].path.split('/').last),
                 trailing: playerStatus.value == PlayerState.playing &&
-                    nowPlayingIndex.value == index
+                    currentFile.value?.path == files[index].path
                     ? const Icon(Icons.pause)
                     : const Icon(Icons.play_arrow),
                 onTap: () {
-                  if (nowPlayingIndex.value != index) {
+                  if (currentFile.value?.path != files[index].path) {
                     player.playNew(
                       file: files[index],
                       index: index,
@@ -80,6 +82,8 @@ class MyList extends ConsumerWidget {
                       playerStatusNotifier: playerStatusNotifier,
                       currentDurationNotifier: currentDurationNotifier,
                       playlistNotifier: playlistNotifier,
+                      playlist : playlist,
+                      shuffleMode : shuffleMode,
                     );
                   }
 

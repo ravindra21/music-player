@@ -133,14 +133,29 @@ class MyAudioControl extends ConsumerWidget {
     final currentDurationNotifier = ref.watch(currentDurationProvider.notifier);
     final playbackMode = ref.watch(playbackModeProvider);
     final playbackModeNotifier = ref.watch(playbackModeProvider.notifier);
+    final shuffleMode = ref.watch(shuffleModeProvider);
+    final shuffleModeNotifier = ref.watch(shuffleModeProvider.notifier);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         IconButton(
           onPressed: () {
+            if(shuffleMode.value == ShuffleMode.on) {
+              player.shuffleOff(ref:ref);
+              return;
+            }
+
+            player.shuffle(ref: ref);
+            return;
           },
-          icon: const Icon(Icons.shuffle),
+          icon: ((){
+            if(shuffleMode.value == ShuffleMode.on) {
+              return const Icon(Icons.shuffle);
+            }
+
+            return const Icon(Icons.shuffle, color: Colors.grey);
+          }()),
           iconSize: 20,
         ),
         IconButton(

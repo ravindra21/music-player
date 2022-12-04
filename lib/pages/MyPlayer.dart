@@ -134,7 +134,6 @@ class MyAudioControl extends ConsumerWidget {
     final playbackMode = ref.watch(playbackModeProvider);
     final playbackModeNotifier = ref.watch(playbackModeProvider.notifier);
     final shuffleMode = ref.watch(shuffleModeProvider);
-    final shuffleModeNotifier = ref.watch(shuffleModeProvider.notifier);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -301,7 +300,6 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
       });
     }
 
-    // TODO: implement initState
     super.initState();
   }
 
@@ -343,7 +341,6 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
   void dispose() {
     _currentDurationController.cancel();
     _playerStateChangeController.cancel();
-    // TODO: implement dispose
     super.dispose();
   }
 }

@@ -189,25 +189,6 @@ class ShuffleModeNotifier extends StateNotifier<ShuffleModeState> {
       state = state.copyWith(shuffleMode);
 }
 
-class PlayedIndexState {
-  PlayedIndexState({
-    this.value = const [],
-  });
-
-  final List<int?> value;
-
-  PlayedIndexState copyWith(List<int?> playedIndex) {
-    return PlayedIndexState(value: playedIndex);
-  }
-}
-
-class PlayedIndexNotifier extends StateNotifier<PlayedIndexState> {
-  PlayedIndexNotifier() : super(PlayedIndexState());
-
-  void replace(List<int?> index) =>
-      state = state.copyWith(index);
-}
-
 final playerStatusProvider =
     StateNotifierProvider<PlayerStatusNotifier, PlayerStatusState>(
   (ref) => PlayerStatusNotifier(),

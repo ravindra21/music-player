@@ -205,10 +205,6 @@ class MyAudioPlayerImpl extends MyAudioPlayer {
 
   @override
   int? getRandomIndex(List<int?> playlistIndex, List<int?> playedIndexArray) {
-    print('===================');
-    print(playlistIndex);
-    print(playedIndexArray);
-    print('=====================');
     List<int?> newPlaylist = playlistIndex.where((el) => !playedIndexArray.contains(el)).toList(); // salah nih
     int? randomItem = (newPlaylist..shuffle()).first;
     return randomItem;
@@ -240,17 +236,5 @@ class MyAudioPlayerImpl extends MyAudioPlayer {
     int newIndex = originalPlaylist.value.indexWhere((el) => el?.path == currentFile.value?.path);
     playlistNotifier.set(originalPlaylist.value.cast());
     nowPlayingIndexNotifier.changeIndex(newIndex);
-  }
-
-  next(){
-    // jika shuffle on
-      // kalo playedIndexState.length == playlist.length
-        // playledIndexState.empty();
-      //newIndex = get random index
-      // push ke playedIndexState
-  }
-
-  shuffleOffClick() {
-    // playedIndexState.empty();
   }
 }

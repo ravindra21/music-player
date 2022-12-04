@@ -44,7 +44,6 @@ class MyList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playerStatus = ref.watch(playerStatusProvider);
     final playerStatusNotifier = ref.watch(playerStatusProvider.notifier);
-    final nowPlayingIndex = ref.watch(nowPlayingIndexProvider);
     final nowPlayingIndexNotifier = ref.watch(nowPlayingIndexProvider.notifier);
     final currentDurationNotifier = ref.watch(currentDurationProvider.notifier);
     final currentFileNotifier = ref.watch(currentFileProvider.notifier);

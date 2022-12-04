@@ -131,12 +131,19 @@ class MyAudioControl extends ConsumerWidget {
     final currentIndex = ref.watch(nowPlayingIndexProvider);
     final currentIndexNotifier = ref.watch(nowPlayingIndexProvider.notifier);
     final playlist = ref.watch(playlistProvider);
-    final currentDuration = ref.watch(currentDurationProvider);
     final currentDurationNotifier = ref.watch(currentDurationProvider.notifier);
+    final playbackMode = ref.watch(playbackModeProvider);
+    final playbackModeNotifier = ref.watch(playbackModeProvider.notifier);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        IconButton(
+          onPressed: () {
+          },
+          icon: const Icon(Icons.shuffle),
+          iconSize: 20,
+        ),
         IconButton(
           onPressed: () {
             int newIndex = currentIndex.value - 1;
@@ -194,6 +201,30 @@ class MyAudioControl extends ConsumerWidget {
           icon: const Icon(Icons.fast_forward),
           iconSize: 40,
         ),
+        IconButton(
+          onPressed: () {
+            if(playbackMode.value == PlaybackMode.repeatCurrent) {
+              playbackModeNotifier.changeMode(PlaybackMode.noRepeat);
+              return;
+            } else if(playbackMode.value == PlaybackMode.repeat) {
+              playbackModeNotifier.changeMode(PlaybackMode.repeatCurrent);
+              return;
+            }
+
+            playbackModeNotifier.changeMode(PlaybackMode.repeat);
+            return;
+          },
+          icon: ((){
+            if(playbackMode.value == PlaybackMode.repeatCurrent) {
+              return const Icon(Icons.repeat_one);
+            } else if(playbackMode.value == PlaybackMode.repeat) {
+              return const Icon(Icons.repeat);
+            }
+
+            return const Icon(Icons.repeat, color: Colors.grey);
+          }()),
+          iconSize: 20,
+        ),
       ],
     );
   }
@@ -215,6 +246,7 @@ class MyAudioPosition extends ConsumerStatefulWidget {
 
 class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
   late StreamSubscription<Duration> _currentDurationController;
+  late StreamSubscription<PlayerState> _playerStateChangeController;
 
   StreamSubscription<Duration> subscribePlayerCurrentDuration(
     MyAudioPlayer player,
@@ -235,11 +267,22 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
       _currentDurationController =
           subscribePlayerCurrentDuration(widget.player, ref);
 
-      widget.player.onPlayerStateChanged.listen((PlayerState s) {
+      _playerStateChangeController = widget.player.onPlayerStateChanged.listen((PlayerState s) {
         if (s == PlayerState.completed) {
-          ref
-              .watch(playerStatusProvider.notifier)
-              .changeStatus(PlayerState.completed);
+          PlaybackModeState playbackMode = ref.watch(playbackModeProvider);
+
+          if(playbackMode.value == PlaybackMode.repeatCurrent) {
+            widget.player.replayAudio(
+              ref: ref,
+              currentFileProvider: currentFileProvider,
+            );
+            return;
+          } else if(playbackMode.value == PlaybackMode.repeat) {
+            widget.player.nextRepeat(ref: ref);
+            return;
+          }
+
+          widget.player.nextNoRepeat(ref: ref);
         }
       });
     }
@@ -259,7 +302,7 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
             '${currentDuration.value.inMinutes}:${currentDuration.value.inSeconds % 60}'),
         Expanded(
           child: Slider.adaptive(
-              value: currentDuration.value.inSeconds.toDouble(),
+              value: currentDuration.value.inSeconds.toDouble() > widget.duration.inSeconds.toDouble() ? widget.duration.inSeconds.toDouble() : currentDuration.value.inSeconds.toDouble(),
               min: 0,
               max: widget.duration.inSeconds.toDouble(),
               onChangeEnd: (newValue) {
@@ -285,6 +328,7 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
   @override
   void dispose() {
     _currentDurationController.cancel();
+    _playerStateChangeController.cancel();
     // TODO: implement dispose
     super.dispose();
   }

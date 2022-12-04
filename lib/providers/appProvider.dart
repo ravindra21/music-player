@@ -34,8 +34,8 @@ class NowPlayingIndexState {
 
   final int value;
 
-  NowPlayingIndexState copyWith({int? index}) {
-    return NowPlayingIndexState(value: index ?? value);
+  NowPlayingIndexState copyWith({required int index}) {
+    return NowPlayingIndexState(value: index);
   }
 }
 
@@ -120,6 +120,31 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
   }
 }
 
+enum PlaybackMode {
+  repeatCurrent,
+  repeat,
+  noRepeat,
+}
+
+class PlaybackModeState {
+  PlaybackModeState({
+    this.value = PlaybackMode.repeatCurrent,
+  });
+
+  final PlaybackMode value;
+
+  PlaybackModeState copyWith(PlaybackMode playbackMode) {
+    return PlaybackModeState(value: playbackMode);
+  }
+}
+
+class PlaybackModeNotifier extends StateNotifier<PlaybackModeState> {
+  PlaybackModeNotifier() : super(PlaybackModeState());
+
+  void changeMode(PlaybackMode playbackMode) =>
+      state = state.copyWith(playbackMode);
+}
+
 final playerStatusProvider =
     StateNotifierProvider<PlayerStatusNotifier, PlayerStatusState>(
   (ref) => PlayerStatusNotifier(),
@@ -162,3 +187,5 @@ final playlistProvider =
 StateNotifierProvider<PlaylistNotifier, PlaylistState>(
       (ref) => PlaylistNotifier(ref:ref),
 );
+
+final playbackModeProvider = StateNotifierProvider<PlaybackModeNotifier, PlaybackModeState>((ref) => PlaybackModeNotifier());

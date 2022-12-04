@@ -1,8 +1,6 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/providers/appProvider.dart';
 
@@ -103,9 +101,6 @@ class MyAudioPlayerImpl extends MyAudioPlayer {
     required PlayerStatusState playerStatus,
     required PlayerStatusNotifier playerStatusNotifier,
   }) {
-    print('========================');
-    print(playerStatus.value.name);
-    print('=========================');
     if (playerStatus.value == PlayerState.playing) {
       pause();
       playerStatusNotifier.changeStatus(PlayerState.paused);

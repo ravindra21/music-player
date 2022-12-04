@@ -1,18 +1,20 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/plugins/audio.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'pages/MyMusicList.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    ProviderScope(child: MyApp()),
-  );
+  if(await Permission.storage.request().isGranted) {
+    runApp(
+      const ProviderScope(child: MyApp()),
+    );
+  }
 }
 
 class MyApp extends StatefulWidget {
-  MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();

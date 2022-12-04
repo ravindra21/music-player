@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:external_path/external_path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/pages/MyPlayer.dart';
@@ -16,24 +15,8 @@ class MyMusicList extends ConsumerWidget {
 
   final MyAudioPlayer player;
 
-  Future<List<File>> _getAudio() async {
-    // get the directory for picking
-    List<String> storageInfo =
-        await ExternalPath.getExternalStorageDirectories();
-    Directory dir = Directory('${storageInfo[0]}/Download');
-    // get the musics from selected directory
-    var files = dir
-        .listSync(recursive: false)
-        .whereType<File>()
-        .where((e) => e.path.endsWith('.mp3'))
-        .toList();
-
-    return files;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<File>>? files = ref.watch(filesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -67,7 +50,6 @@ class MyList extends ConsumerWidget {
     final currentFileNotifier = ref.watch(currentFileProvider.notifier);
     AsyncValue<List<File>> files = ref.watch(filesProvider);
     final playlistNotifier = ref.watch(playlistProvider.notifier);
-    final playlist = ref.watch(playlistProvider);
 
     return files.when(
         data: (files) => ListView.separated(

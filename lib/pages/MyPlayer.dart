@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -60,7 +59,7 @@ class MyPlayerUi extends ConsumerWidget {
     return metadata.when(
       skipLoadingOnRefresh: true,
       skipLoadingOnReload: true,
-      loading: ()=> Text('loading'),
+      loading: ()=> const Text('loading'),
       error: (err, stack) => const Text('error'),
       data: (metadata) => SafeArea(
         child: Stack(

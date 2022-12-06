@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/plugins/audio.dart';
+import 'package:fluttertestdrive/plugins/service_locator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'pages/MyMusicList.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'pages/my_music_list.dart';
+
+Future<void> injectService() async {
+  getIt.registerSingleton<SharedPreferences>(
+      await SharedPreferences.getInstance());
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if(await Permission.storage.request().isGranted) {
+
+  await injectService();
+  if (await Permission.storage.request().isGranted) {
     runApp(
       const ProviderScope(child: MyApp()),
     );

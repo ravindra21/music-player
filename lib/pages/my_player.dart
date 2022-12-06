@@ -6,7 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/plugins/audio.dart';
-import 'package:fluttertestdrive/providers/appProvider.dart';
+import 'package:fluttertestdrive/plugins/service_locator.dart';
+import 'package:fluttertestdrive/providers/current_duration.dart';
+import 'package:fluttertestdrive/providers/metadata.dart';
+import 'package:fluttertestdrive/providers/playback_mode.dart';
+import 'package:fluttertestdrive/providers/player_status.dart';
+import 'package:fluttertestdrive/providers/shuffle_mode.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyPlayer extends StatelessWidget {
   final List<File> data;
@@ -59,7 +65,7 @@ class MyPlayerUi extends ConsumerWidget {
     return metadata.when(
       skipLoadingOnRefresh: true,
       skipLoadingOnReload: true,
-      loading: ()=> const Text('loading'),
+      loading: () => const Text('loading'),
       error: (err, stack) => const Text('error'),
       data: (metadata) => SafeArea(
         child: Stack(
@@ -124,15 +130,7 @@ class MyAudioControl extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playerStatus = ref.watch(playerStatusProvider);
-    final playerStatusNotifier = ref.watch(playerStatusProvider.notifier);
-    final currentFile = ref.watch(currentFileProvider);
-    final currentFileNotifier = ref.watch(currentFileProvider.notifier);
-    final currentIndex = ref.watch(nowPlayingIndexProvider);
-    final currentIndexNotifier = ref.watch(nowPlayingIndexProvider.notifier);
-    final playlist = ref.watch(playlistProvider);
-    final currentDurationNotifier = ref.watch(currentDurationProvider.notifier);
     final playbackMode = ref.watch(playbackModeProvider);
-    final playbackModeNotifier = ref.watch(playbackModeProvider.notifier);
     final shuffleMode = ref.watch(shuffleModeProvider);
 
     return Row(
@@ -140,16 +138,16 @@ class MyAudioControl extends ConsumerWidget {
       children: <Widget>[
         IconButton(
           onPressed: () {
-            if(shuffleMode.value == ShuffleMode.on) {
-              player.shuffleOff(ref:ref);
+            if (shuffleMode.value == ShuffleMode.on) {
+              player.shuffleOff(ref: ref);
               return;
             }
 
             player.shuffle(ref: ref);
             return;
           },
-          icon: ((){
-            if(shuffleMode.value == ShuffleMode.on) {
+          icon: (() {
+            if (shuffleMode.value == ShuffleMode.on) {
               return const Icon(Icons.shuffle);
             }
 
@@ -159,20 +157,7 @@ class MyAudioControl extends ConsumerWidget {
         ),
         IconButton(
           onPressed: () {
-            int newIndex = currentIndex.value - 1;
-
-            if(currentIndex.value == 0) {
-              newIndex = (playlist.value?.length??0) - 1;
-            }
-
-            currentIndexNotifier.changeIndex(newIndex);
-            currentFileNotifier.changeFile(playlist.value?[newIndex]?? File(''));
-            currentDurationNotifier.changeCurrentDuration(const Duration(seconds: 0));
-            if(playerStatus.value == PlayerState.playing) {
-              player.play(playlist.value?[newIndex]?? File(''));
-            } else {
-              player.setSourceDeviceFile(playlist.value?[newIndex].path ?? '');
-            }
+            player.prev(ref: ref);
           },
           icon: const Icon(Icons.fast_rewind),
           iconSize: 40,
@@ -180,13 +165,7 @@ class MyAudioControl extends ConsumerWidget {
         const SizedBox(width: 16),
         IconButton(
           onPressed: () {
-            player.resumeOrPause(
-              file: source,
-              currentFile: currentFile,
-              currentFileNotifier: currentFileNotifier,
-              playerStatus: playerStatus,
-              playerStatusNotifier: playerStatusNotifier,
-            );
+            player.resumeOrPause(ref: ref);
           },
           icon: playerStatus.value == PlayerState.playing
               ? const Icon(Icons.pause_circle_filled)
@@ -196,41 +175,19 @@ class MyAudioControl extends ConsumerWidget {
         const SizedBox(width: 16),
         IconButton(
           onPressed: () {
-            int newIndex = currentIndex.value + 1;
-
-            if(currentIndex.value == (playlist.value?.length??0)-1) {
-              newIndex = 0;
-            }
-
-            currentIndexNotifier.changeIndex(newIndex);
-            currentFileNotifier.changeFile(playlist.value?[newIndex]?? File(''));
-            currentDurationNotifier.changeCurrentDuration(const Duration(seconds: 0));
-            if(playerStatus.value == PlayerState.playing) {
-              player.play(playlist.value?[newIndex]?? File(''));
-            } else {
-              player.setSourceDeviceFile(playlist.value?[newIndex].path ?? '');
-            }
+            player.next(ref: ref);
           },
           icon: const Icon(Icons.fast_forward),
           iconSize: 40,
         ),
         IconButton(
           onPressed: () {
-            if(playbackMode.value == PlaybackMode.repeatCurrent) {
-              playbackModeNotifier.changeMode(PlaybackMode.noRepeat);
-              return;
-            } else if(playbackMode.value == PlaybackMode.repeat) {
-              playbackModeNotifier.changeMode(PlaybackMode.repeatCurrent);
-              return;
-            }
-
-            playbackModeNotifier.changeMode(PlaybackMode.repeat);
-            return;
+            player.changePlaybackMode(ref: ref);
           },
-          icon: ((){
-            if(playbackMode.value == PlaybackMode.repeatCurrent) {
+          icon: (() {
+            if (playbackMode.value == PlaybackMode.repeatCurrent) {
               return const Icon(Icons.repeat_one);
-            } else if(playbackMode.value == PlaybackMode.repeat) {
+            } else if (playbackMode.value == PlaybackMode.repeat) {
               return const Icon(Icons.repeat);
             }
 
@@ -280,17 +237,15 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
       _currentDurationController =
           subscribePlayerCurrentDuration(widget.player, ref);
 
-      _playerStateChangeController = widget.player.onPlayerStateChanged.listen((PlayerState s) {
+      _playerStateChangeController =
+          widget.player.onPlayerStateChanged.listen((PlayerState s) {
         if (s == PlayerState.completed) {
           PlaybackModeState playbackMode = ref.watch(playbackModeProvider);
 
-          if(playbackMode.value == PlaybackMode.repeatCurrent) {
-            widget.player.replayAudio(
-              ref: ref,
-              currentFileProvider: currentFileProvider,
-            );
+          if (playbackMode.value == PlaybackMode.repeatCurrent) {
+            widget.player.replayAudio(ref: ref);
             return;
-          } else if(playbackMode.value == PlaybackMode.repeat) {
+          } else if (playbackMode.value == PlaybackMode.repeat) {
             widget.player.nextRepeat(ref: ref);
             return;
           }
@@ -314,7 +269,10 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
             '${currentDuration.value.inMinutes}:${currentDuration.value.inSeconds % 60}'),
         Expanded(
           child: Slider.adaptive(
-              value: currentDuration.value.inSeconds.toDouble() > widget.duration.inSeconds.toDouble() ? widget.duration.inSeconds.toDouble() : currentDuration.value.inSeconds.toDouble(),
+              value: currentDuration.value.inSeconds.toDouble() >
+                      widget.duration.inSeconds.toDouble()
+                  ? widget.duration.inSeconds.toDouble()
+                  : currentDuration.value.inSeconds.toDouble(),
               min: 0,
               max: widget.duration.inSeconds.toDouble(),
               onChangeEnd: (newValue) {

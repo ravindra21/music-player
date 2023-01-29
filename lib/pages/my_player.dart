@@ -6,7 +6,6 @@ import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/plugins/service_locator.dart';
 import 'package:fluttertestdrive/providers/audio.dart';
-import 'package:fluttertestdrive/providers/index_stream.dart';
 import 'package:just_audio/just_audio.dart';
 
 class MyPlayer extends StatelessWidget {
@@ -43,9 +42,9 @@ class MyPlayerUi extends ConsumerWidget {
     return SafeArea(
       child: Stack(
         children: [
-          metadata!.albumArt == null
+          metadata?.albumArt == null
               ? const Placeholder()
-              : Image.memory(metadata.albumArt!),
+              : Image.memory(metadata!.albumArt!),
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -54,18 +53,18 @@ class MyPlayerUi extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(80, 0, 80, 0),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: metadata.albumArt == null
+                  child: metadata?.albumArt == null
                       ? const Placeholder()
-                      : Image.memory(metadata.albumArt!),
+                      : Image.memory(metadata!.albumArt!),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
                 child: Column(
                   children: [
-                    Text(metadata.filePath?.split('/').last ?? ''),
+                    Text(metadata?.filePath?.split('/').last ?? ''),
                     const SizedBox(height: 12),
-                    Text(metadata.trackArtistNames?[0] ?? ''),
+                    Text(metadata?.trackArtistNames?[0] ?? ''),
                     const SizedBox(height: 20),
                     const MyAudioPosition(),
                     const SizedBox(height: 20),

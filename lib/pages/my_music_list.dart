@@ -6,9 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertestdrive/pages/my_player.dart';
 import 'package:fluttertestdrive/plugins/service_locator.dart';
 import 'package:fluttertestdrive/providers/audio.dart';
-import 'package:fluttertestdrive/providers/current_file.dart';
 import 'package:fluttertestdrive/providers/files.dart';
-import 'package:fluttertestdrive/providers/is_playing.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 

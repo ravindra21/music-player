@@ -193,7 +193,6 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
   void initState() {
     if (mounted) {
       final AudioNotifier audioNotifier = ref.read(audioProvider.notifier);
-      final AudioState audio = ref.read(audioProvider);
 
       _positionController =
           getIt<AudioPlayer>().positionStream.listen((Duration position) async {
@@ -205,6 +204,8 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
 
       _indexController =
           getIt<AudioPlayer>().currentIndexStream.listen((index) async {
+        final AudioState audio = ref.watch(audioProvider);
+
         if (index != audio.index) {
           var file = File.fromUri(
             audio.playlist[getIt<AudioPlayer>().currentIndex!].uri,
@@ -218,6 +219,8 @@ class _MyAudioPositionState extends ConsumerState<MyAudioPosition> {
 
       _durationController =
           getIt<AudioPlayer>().durationStream.listen((duration) async {
+        final AudioState audio = ref.watch(audioProvider);
+
         if (duration != audio.duration) {
           audioNotifier.setDuration(duration!);
         }

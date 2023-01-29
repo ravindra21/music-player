@@ -64,7 +64,7 @@ class MyMusicListItem extends ConsumerWidget {
   final List<File> files;
   final int index;
 
-  onTapListItem(context, ref) async {
+  Future onTapListItem(context, ref) async {
     final AudioNotifier audioNotifier = ref.watch(audioProvider.notifier);
     audioNotifier.setCurrentFile(files[index]);
     audioNotifier.setIndex(index);
@@ -115,12 +115,13 @@ class MyMusicListItem extends ConsumerWidget {
                 : const Icon(Icons.play_arrow);
           }
         }()),
-        onTap: () {
+        onTap: () async {
+          final navigator = Navigator.of(context);
           if (!isCurrentItem) {
-            onTapListItem(context, ref);
+            await onTapListItem(context, ref);
           }
 
-          Navigator.of(context).push(
+          navigator.push(
             MaterialPageRoute(
               builder: (context) {
                 return const MyPlayer();
